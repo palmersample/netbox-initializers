@@ -2,6 +2,8 @@ from tenancy.models import TenantGroup
 
 from . import BaseInitializer, register_initializer
 
+OPTIONAL_ASSOCS = {"parent": (TenantGroup, "name")}
+
 
 class TenantGroupInitializer(BaseInitializer):
     data_file_name = "tenant_groups.yml"
@@ -12,6 +14,14 @@ class TenantGroupInitializer(BaseInitializer):
             return
         for params in tenant_groups:
             tags = params.pop("tags", None)
+
+            for assoc, details in OPTIONAL_ASSOCS.items():
+                if assoc in params:
+                    model, field = details
+                    query = {field: params.pop(assoc)}
+
+                    params[assoc] = model.objects.get(**query)
+
             matching_params, defaults = self.split_params(params)
             tenant_group, created = TenantGroup.objects.get_or_create(
                 **matching_params, defaults=defaults

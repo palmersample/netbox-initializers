@@ -34,6 +34,17 @@
 #   enabled: true
 #   type: virtual
 #   name: loopback
+# - device: server03
+#   type: 1000base-t
+#   name: GigabitEthernet1/0/1
+#   vrf: Shared Services
+# - device: server04
+#   type: 1000base-t
+#   name: GigabitEthernet1/0/4
+#   mode: tagged
+#   tagged_vlans:
+#     - product-dev
+#     - product-testing
 
 ## Example to add attributes on a templated interface
 # - name: Ethernet1

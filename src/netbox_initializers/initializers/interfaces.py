@@ -1,5 +1,5 @@
 from dcim.models import Device, Interface
-from ipam.models import VLAN
+from ipam.models import VLAN, VRF
 
 from . import BaseInitializer, register_initializer
 
@@ -7,6 +7,10 @@ MATCH_PARAMS = ["device", "name"]
 REQUIRED_ASSOCS = {"device": (Device, "name")}
 OPTIONAL_ASSOCS = {
     "untagged_vlan": (VLAN, "name"),
+    "vrf": (VRF, "name"),
+}
+OPTIONAL_MANY_ASSOCS = {
+    "tagged_vlans": (VLAN, "name"),
 }
 RELATED_ASSOCS = {
     "bridge": (Interface, "name"),
@@ -41,10 +45,24 @@ class InterfaceInitializer(BaseInitializer):
 
                     params[assoc] = model.objects.get(**query)
 
+            # siphon off params that represent many to many relationships
+            many_assocs = {}
+            for many_assoc in OPTIONAL_MANY_ASSOCS.keys():
+                if many_assoc in params:
+                    many_assocs[many_assoc] = params.pop(many_assoc)
+
             matching_params, defaults = self.split_params(params, MATCH_PARAMS)
             interface, created = Interface.objects.get_or_create(
                 **matching_params, defaults=defaults
             )
+
+            # process the one to many relationships
+            for assoc_field, assocs in many_assocs.items():
+                model, field = OPTIONAL_MANY_ASSOCS[assoc_field]
+                for assoc in assocs:
+                    query = {field: assoc}
+                    getattr(interface, assoc_field).add(model.objects.get(**query))
+
 
             if created:
                 print(f"🧷 Created interface {interface} on {interface.device}")

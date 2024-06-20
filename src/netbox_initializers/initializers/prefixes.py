@@ -5,7 +5,7 @@ from tenancy.models import Tenant, TenantGroup
 
 from . import BaseInitializer, register_initializer
 
-MATCH_PARAMS = ["prefix", "site", "vrf", "vlan"]
+MATCH_PARAMS = ["prefix", "site", "status", "vrf", "vlan"]
 OPTIONAL_ASSOCS = {
     "site": (Site, "name"),
     "tenant": (Tenant, "name"),

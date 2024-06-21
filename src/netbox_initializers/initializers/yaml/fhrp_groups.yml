@@ -1,0 +1,22 @@
+## Possible Choices:
+##   protocol:
+##     - vrrp2
+##     - vrrp3
+##     - carp
+##     - clusterxl
+##     - hsrp
+##     - glbp
+##     - other
+##
+##   auth_type:
+##     - md5
+##     - plaintext
+##
+## Examples:
+# - group_id: 10
+#   name: new_fhrp_group
+#   description: Example FHRP group
+#   protocol: hsrp
+#
+
+

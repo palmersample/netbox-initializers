@@ -40,12 +40,13 @@ INITIALIZER_ORDER = (
     "prefix_vlan_roles",
     "vlan_groups",
     "vlans",
+    "route_targets",
     "vrfs",
     "prefixes",
-    "ip_addresses",
+    "fhrp_groups",
     "devices",
     "interfaces",
-    "route_targets",
+    "ip_addresses",
     "aggregates",
     "virtual_machines",
     "virtualization_interfaces",
@@ -186,6 +187,7 @@ from .custom_links import CustomLinkInitializer
 from .device_roles import DeviceRoleInitializer
 from .device_types import DeviceTypeInitializer
 from .devices import DeviceInitializer
+from .fhrp_groups import FhrpGroupInitializer
 from .groups import GroupInitializer
 from .interfaces import InterfaceInitializer
 from .ip_addresses import IPAddressInitializer

@@ -1,7 +1,7 @@
 from dcim.models import Device, Interface
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from ipam.models import VRF, IPAddress
+from ipam.models import VRF, IPAddress, FHRPGroup
 from netaddr import IPNetwork
 from tenancy.models import Tenant
 from virtualization.models import VirtualMachine, VMInterface
@@ -13,13 +13,14 @@ OPTIONAL_ASSOCS = {
     "tenant": (Tenant, "name"),
     "vrf": (VRF, "name"),
     "interface": (Interface, "name"),
+    "fhrp_group": (FHRPGroup, "group_id"),
 }
 
 VM_INTERFACE_CT = ContentType.objects.filter(
     Q(app_label="virtualization", model="vminterface")
 ).first()
 INTERFACE_CT = ContentType.objects.filter(Q(app_label="dcim", model="interface")).first()
-
+FHRP_GROUP_CT = ContentType.objects.filter(Q(app_label="ipam", model="fhrpgroup")).first()
 
 class IPAddressInitializer(BaseInitializer):
     data_file_name = "ip_addresses.yml"
@@ -34,11 +35,18 @@ class IPAddressInitializer(BaseInitializer):
 
             vm = params.pop("virtual_machine", None)
             device = params.pop("device", None)
+            # fhrp_group = params.pop("fhrp_group", None)
             params["address"] = IPNetwork(params["address"])
 
-            if vm and device:
+            # if vm and device or fhrp_group:
+            if (
+                (vm and device and params.get("fhrp_group", None)) or
+                (vm and device) or
+                (vm and params.get("fhrp_group", None)) or
+                (device and params.get("fhrp_group", None))
+            ):
                 raise InitializationError(
-                    "IP Address can only specify one of the following: virtual_machine or device."
+                    "IP Address can only specify one of the following: virtual_machine or device or fhrp_group."
                 )
 
             for assoc, details in OPTIONAL_ASSOCS.items():
@@ -55,6 +63,11 @@ class IPAddressInitializer(BaseInitializer):
                             query = {"name": params.pop(assoc), "device_id": dev_id}
                             params["assigned_object_type"] = INTERFACE_CT
                             params["assigned_object_id"] = Interface.objects.get(**query).id
+                    elif assoc == "fhrp_group":
+                        query = {"group_id": params.pop(assoc)}
+                        params["assigned_object_type"] = FHRP_GROUP_CT
+                        params["assigned_object_id"] = FHRPGroup.objects.get(**query).id
+
                     elif assoc == "vrf" and params[assoc] is None:
                         params["vrf_id"] = None
                     else:

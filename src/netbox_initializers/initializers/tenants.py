@@ -1,8 +1,13 @@
-from tenancy.models import Tenant, TenantGroup
+from tenancy.models import Tenant, TenantGroup, Contact, ContactRole, ContactAssignment
+from django.db.models import Q
+from django.contrib.contenttypes.models import ContentType
+
 
 from . import BaseInitializer, register_initializer
 
-OPTIONAL_ASSOCS = {"group": (TenantGroup, "name")}
+OPTIONAL_ASSOCS = {
+    "group": (TenantGroup, "name"),
+}
 
 
 class TenantInitializer(BaseInitializer):

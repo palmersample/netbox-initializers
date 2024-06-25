@@ -41,6 +41,7 @@ INITIALIZER_ORDER = (
     "vlan_groups",
     "vlans",
     "route_targets",
+    "l2vpns",
     "vrfs",
     "prefixes",
     "fhrp_groups",
@@ -191,6 +192,7 @@ from .fhrp_groups import FhrpGroupInitializer
 from .groups import GroupInitializer
 from .interfaces import InterfaceInitializer
 from .ip_addresses import IPAddressInitializer
+from .l2vpns import L2VPNInitializer
 from .locations import LocationInitializer
 from .manufacturers import ManufacturerInitializer
 from .object_permissions import ObjectPermissionInitializer

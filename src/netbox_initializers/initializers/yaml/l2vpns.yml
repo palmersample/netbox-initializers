@@ -1,0 +1,30 @@
+# Choices:
+#  type:
+#    - vpws
+#    - vpls
+#    - vxlan
+#    - vxlan-evpn
+#    - mpls-evpn
+#    - pbb-evpn
+#    - epl
+#    - evpl
+#    - ep-lan
+#    - evp-lan
+#    - ep-tree
+#    - evp-tree
+##
+## Examples:
+
+#- name: asdkfj
+#  slug: asdlkfj
+#  type: laksdjf
+#  identifier: 101203
+#  description: adfskj
+#  tags: asdlkfjh
+#  import_targets:
+#    - 65000:1001
+#  export_targets:
+#    - 65000:1001
+#  tenant: blah
+
+---

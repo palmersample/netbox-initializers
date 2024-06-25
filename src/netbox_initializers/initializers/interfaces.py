@@ -1,7 +1,10 @@
 from dcim.models import Device, Interface
-from ipam.models import VLAN, VRF
+from ipam.models import VLAN, VRF, FHRPGroup, FHRPGroupAssignment
+from django.db.models import Q
+from django.contrib.contenttypes.models import ContentType
 
-from . import BaseInitializer, register_initializer
+
+from . import BaseInitializer, InitializationError, register_initializer
 
 MATCH_PARAMS = ["device", "name"]
 REQUIRED_ASSOCS = {"device": (Device, "name")}
@@ -11,12 +14,15 @@ OPTIONAL_ASSOCS = {
 }
 OPTIONAL_MANY_ASSOCS = {
     "tagged_vlans": (VLAN, "name"),
+    "fhrp_groups": (FHRPGroup, "group_id"),
 }
 RELATED_ASSOCS = {
     "bridge": (Interface, "name"),
     "lag": (Interface, "name"),
     "parent": (Interface, "name"),
 }
+
+INTERFACE_CT = ContentType.objects.filter(Q(app_label="dcim", model="interface")).first()
 
 
 class InterfaceInitializer(BaseInitializer):
@@ -59,10 +65,23 @@ class InterfaceInitializer(BaseInitializer):
             # process the one to many relationships
             for assoc_field, assocs in many_assocs.items():
                 model, field = OPTIONAL_MANY_ASSOCS[assoc_field]
-                for assoc in assocs:
-                    query = {field: assoc}
-                    getattr(interface, assoc_field).add(model.objects.get(**query))
-
+                if assoc_field == "fhrp_groups":
+                    for assoc in assocs:
+                        if not all((assoc["group_id"], assoc["priority"], )):
+                            raise InitializationError(
+                                "FHRP Group assignment requires fields 'group_id' and 'priority' to be defined."
+                            )
+                        query = {field: assoc["group_id"]}
+                        FHRPGroupAssignment.objects.get_or_create(
+                            interface_type=INTERFACE_CT,
+                            interface_id=interface.id,
+                            group=model.objects.get(**query),
+                            priority=assoc["priority"]
+                        )
+                else:
+                    for assoc in assocs:
+                        query = {field: assoc}
+                        getattr(interface, assoc_field).add(model.objects.get(**query))
 
             if created:
                 print(f"🧷 Created interface {interface} on {interface.device}")
